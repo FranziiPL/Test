@@ -1,217 +1,85 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badanie</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f4f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            width: 90%;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: #3498db;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 1.4em;
-        }
-        .content {
-            padding: 40px 30px;
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin: 20px 0 8px;
-            font-weight: 500;
-            text-align: left;
-        }
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.1em;
-        }
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin: 15px 0;
-        }
-        button {
-            margin-top: 30px;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        button:hover { background: #219653; }
-        
-        /* Loading */
-        .loading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            padding: 60px 20px;
-        }
-        .spinner {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 25px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .thank {
-            display: none;
-            padding: 60px 40px;
-            font-size: 1.3em;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- FORMULARZ -->
-        <div id="form-container">
-            <div class="header">Ankieta demograficzna</div>
-            <div class="content">
-                <label>Płeć:</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="gender" value="kobieta"> Kobieta</label>
-                    <label><input type="radio" name="gender" value="mężczyzna"> Mężczyzna</label>
-                    <label><input type="radio" name="gender" value="inne"> Inne</label>
-                </div>
+<script>
+    const APP_URL = 'https://script.google.com/macros/s/TWOJ_NOWY_URL/exec'; 
+    // ← ZAMIEŃ na najnowszy URL z Apps Script (ten który kończy się na /exec)
 
-                <label>Wiek (w latach):</label>
-                <input type="number" id="age" min="1" max="120" placeholder="Wpisz wiek">
+    let startTime = null;
 
-                <label>Wykształcenie:</label>
-                <select id="education">
-                    <option value="">— wybierz —</option>
-                    <option value="podstawowe">podstawowe</option>
-                    <option value="średnie">średnie</option>
-                    <option value="techniczne">techniczne</option>
-                    <option value="zawodowe">zawodowe</option>
-                    <option value="wyższe">wyższe</option>
-                </select>
+    function show(id) {
+        document.querySelectorAll('.container > div').forEach(div => div.style.display = 'none');
+        document.getElementById(id).style.display = id === 'loading-container' ? 'flex' : 'block';
+    }
 
-                <button onclick="goToLoading()">Przejdź dalej</button>
-            </div>
-        </div>
+    function goToLoading() {
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const age = document.getElementById('age').value;
+        const education = document.getElementById('education').value;
 
-        <!-- ŁADOWANIE -->
-        <div id="loading-container" class="loading">
-            <div class="spinner"></div>
-            <h2>Trwa ładowanie. Proszę czekać…</h2>
-        </div>
+        if (!gender) { alert('Wybierz płeć'); return; }
+        if (!age || age < 1) { alert('Podaj poprawny wiek'); return; }
+        if (!education) { alert('Wybierz wykształcenie'); return; }
 
-        <!-- PODZIĘKOWANIE -->
-        <div id="thank-container" class="thank">
-            Dziękujemy za udział w badaniu.<br><br>
-            Celem niniejszego testu było sprawdzenie cierpliwości użytkownika nim zdecyduje się opuścić stronę.<br><br>
-            Państwa wynik został odnotowany.
-        </div>
-    </div>
-
-    <script>
-        const APP_URL = 'https://script.google.com/macros/s/AKfycbzqYLn8XJYd2MryEcP0Sr0dFKKosVsQCH--vbjVxgELS0XBcVmCLTSwOhkk-U-Wv6WpOg/exec';
-
-        let isInLoading = false;
-        let startTime = null;
-
-        function show(id) {
-            document.querySelectorAll('.container > div').forEach(div => div.style.display = 'none');
-            document.getElementById(id).style.display = id === 'loading-container' ? 'flex' : 'block';
-        }
-
-        function goToLoading() {
-            const gender = document.querySelector('input[name="gender"]:checked');
-            const age = document.getElementById('age').value;
-            const education = document.getElementById('education').value;
-
-            if (!gender) { alert('Wybierz płeć'); return; }
-            if (!age || age < 1) { alert('Podaj poprawny wiek'); return; }
-            if (!education) { alert('Wybierz wykształcenie'); return; }
-
-            // zapamiętujemy dane
-            const data = {
-                gender: gender.value,
-                age: parseInt(age),
-                education: education
-            };
-            localStorage.setItem('tempData', JSON.stringify(data));
-
-            startTime = Date.now();
-            localStorage.setItem('startTime', startTime);
-            isInLoading = true;
-            localStorage.setItem('isInLoading', 'true');
-
-            show('loading-container');
-        }
-
-        function showThankYou() {
-            localStorage.setItem('surveyCompleted', 'true');
-            show('thank-container');
-        }
-
-        // Główna logika
-        window.onload = function() {
-            if (localStorage.getItem('surveyCompleted') === 'true') {
-                showThankYou();
-                return;
-            }
-            show('form-container');
+        const data = {
+            gender: gender.value,
+            age: parseInt(age),
+            education: education
         };
+        localStorage.setItem('tempData', JSON.stringify(data));
 
-        // Zapis przy odświeżeniu/zamknięciu karty
-        window.addEventListener('beforeunload', function() {
-            if (isInLoading || localStorage.getItem('isInLoading') === 'true') {
-                const start = parseInt(localStorage.getItem('startTime'));
-                if (start) {
-                    const timeSpent = Math.floor((Date.now() - start) / 1000);
+        startTime = Date.now();
+        localStorage.setItem('startTime', startTime);
+        localStorage.setItem('isInLoading', 'true');
 
-                    const tempDataStr = localStorage.getItem('tempData');
-                    if (tempDataStr) {
-                        let payload = JSON.parse(tempDataStr);
-                        payload.time_seconds = timeSpent;
-                        payload.timestamp = new Date().toISOString();
+        show('loading-container');
+    }
 
-                        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                        navigator.sendBeacon(APP_URL, blob);
-                    }
-                }
-                // blokujemy ponowne wejście
-                localStorage.setItem('surveyCompleted', 'true');
+    function showThankYou() {
+        localStorage.setItem('surveyCompleted', 'true');
+        show('thank-container');
+    }
+
+    window.onload = function() {
+        if (localStorage.getItem('surveyCompleted') === 'true') {
+            showThankYou();
+            return;
+        }
+        show('form-container');
+    };
+
+    // NOWA WERSJA – działa o wiele lepiej
+    window.addEventListener('beforeunload', function() {
+        if (localStorage.getItem('isInLoading') !== 'true') return;
+
+        const start = parseInt(localStorage.getItem('startTime'));
+        if (!start) return;
+
+        const timeSpent = Math.floor((Date.now() - start) / 1000);
+
+        const tempDataStr = localStorage.getItem('tempData');
+        if (!tempDataStr) return;
+
+        let payload = JSON.parse(tempDataStr);
+        payload.time_seconds = timeSpent;
+        payload.timestamp = new Date().toISOString();
+
+        console.log('🟡 Wysyłam dane do arkusza...', payload);   // ← zobaczysz to w konsoli
+
+        fetch(APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true
+        })
+        .then(response => {
+            console.log('✅ Sukces! Status:', response.status);
+            if (response.ok) {
+                console.log('Dane zapisane w arkuszu');
             }
+        })
+        .catch(err => {
+            console.error('❌ Błąd wysyłania:', err);
+            alert('Błąd zapisu – zrób screen konsoli i pokaż mi');
         });
-    </script>
-</body>
-</html>
+
+        localStorage.setItem('surveyCompleted', 'true');
+    });
+</script>
